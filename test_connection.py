@@ -4,9 +4,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-FGT_FQDN = os.getenv("SYM_FGT_SB_FQDN")
-FGT_PORT = os.getenv("SYM_FGT_SB_PORT")
-API_KEY = os.getenv("SYM_FGT_SB_KEY")
+FGT_FQDN = os.getenv("FGT_SB_FQDN")
+FGT_PORT = os.getenv("FGT_SB_PORT")
+API_KEY = os.getenv("FGT_SB_KEY")
 
 #urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 url = f"https://{FGT_FQDN}:{FGT_PORT}/api/v2/monitor/system/status"
