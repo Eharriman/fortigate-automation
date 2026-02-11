@@ -3,6 +3,9 @@ import os
 import ipaddress
 from datetime import datetime
 
+# ENV variables
+author = os.getenv("AUTHOR")
+
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 LOG_FILE = os.path.join(SCRIPT_DIR, "sample_vpn_log.txt")
 #LOG_File = "sample_vpn_log.txt"
@@ -34,6 +37,33 @@ def generate_block_addr(ip_list):
     filepath = os.path.join(SCRIPT_DIR, filename)
 
     try:
+        with open(filepath, "w") as f:
+            f.write(f"# Automated block SSL-VPN Script\n")
+            f.write(f"# Date: {date_str}\n")
+            f.write(f"# Executor: {author}\n")
+            f.write(f"# Total IPs: {len(ip_list)}\n\n")
+
+            # Create address objects based on unique IPs
+            f.write("config firewall address\n")
+            for ip in ip_list:
+                obj_name = f"Blocked_SSL_VPN_IP_{ip}"
+                f.write(f'    edit "{obj_name}"\n')
+                f.write(f'        set subnet {ip} 255.255.255.255\n')
+                f.write(f'        set comment "Targeted Attack Block {date_str}"\n')
+                f.write('    next\n')
+            f.write("end\n\n")
+
+           # Add address objects to addr group
+            f.write("config firewall addrgrp\n")
+            f.write('    edit "Blocked_SSL_VPN_List"\n')
+            for ip in ip_list:
+                obj_name = f"Blocked_SSL_VPN_IP_{ip}"
+                f.write(f'        append member "{obj_name}"\n')
+            f.write('    next\n')
+            f.write("end\n")
+
+        print(f"\n[SUCCESS] Configuration saved to:\n -> {filepath}")
+
     except Exception as e:
         print(f"\n [ERROR] failed to write to conf file: {e}")
 
@@ -101,6 +131,8 @@ def analyze_logs():
             print(f"{attack['user']:<15} {attack['ip']:<20} {attack['time']:<10}")
 
         print(f"\nUnique IPs identified for blocking: {len(unique_bad_ips)}")
+
+        generate_block_addr(unique_bad_ips)
 
 if __name__ == "__main__":
     print(analyze_logs())
