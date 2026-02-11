@@ -1,22 +1,20 @@
 import re
 import os
 import ipaddress
+import csv
 from datetime import datetime
 from dotenv import load_dotenv
 
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 LOG_FILE = os.path.join(SCRIPT_DIR, "sample_vpn_log.txt")
+USER_LIST = os.path.join(SCRIPT_DIR, "valid_users.csv")
 
 # ENV variables
-#env_path = os.path.join(SCRIPT_DIR, ".env")
-#print(env_path)
-#load_dotenv(env_path)
 load_dotenv()
-FGT_FQDN = os.getenv("FGT_SB_FQDN")
 author = os.getenv('AUTHOR')
-print(FGT_FQDN)
-print(author)
+VALID_DOMAINS = os.getenv('VALID_DOMAINS')
+
 
 VALID_USER_DICT = {"marvin","martin", "jsmith", "bwayne"}
 
