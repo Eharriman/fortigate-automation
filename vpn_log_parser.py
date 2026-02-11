@@ -1,6 +1,7 @@
 import re
 import os
 import ipaddress
+from datetime import datetime
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 LOG_FILE = os.path.join(SCRIPT_DIR, "sample_vpn_log.txt")
@@ -21,6 +22,20 @@ def parse_log_line(line):
     
     return log_dict
 
+
+def generate_block_addr(ip_list):
+
+    if not ip_list:
+        print("No IPs in set")
+        return
+    
+    date_str = datetime.now().strftime("%Y-%m-%d")
+    filename = f"conf_add_ips_blocked_ssl-vpn_{date_str}.conf"
+    filepath = os.path.join(SCRIPT_DIR, filename)
+
+    try:
+    except Exception as e:
+        print(f"\n [ERROR] failed to write to conf file: {e}")
 
 
 def analyze_logs():
