@@ -1,6 +1,9 @@
 import re
+import os
 
-LOG_File = "test_log.txt"
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+LOG_FILE = os.path.join(SCRIPT_DIR, "sample_vpn_log.txt")
+#LOG_File = "sample_vpn_log.txt"
 
 VALID_USER_DICT = {"marvin","martin", "jsmith", "bwayne"}
 
@@ -19,6 +22,27 @@ def parse_log_line(line):
 
 
 
-def analyze_log():
+def analyze_logs():
+    #Initialize lists
+    targeted_attacks = []
+    random_noise = []
+
+    # Main log analysis
+    try:
+        with open(LOG_FILE, "r") as f:
+            for line in f:
+                if not line.strip():
+                    continue
+            data = parse_log_line(line)
+    
+    except FileNotFoundError:
+        print("Could not find VPN log file. Check dir path")
+        return
+    
+    return data
+
+
+if __name__ == "__main__":
+    print(analyze_logs())
 
 
