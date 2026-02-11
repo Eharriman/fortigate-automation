@@ -25,7 +25,7 @@ def parse_log_line(line):
 def analyze_logs():
     #Initialize lists
     targeted_attacks = []
-    random_noise = []
+    random_attacks = []
 
     # Main log analysis
     try:
@@ -33,13 +33,38 @@ def analyze_logs():
             for line in f:
                 if not line.strip():
                     continue
-            data = parse_log_line(line)
-    
+                data = parse_log_line(line)
+
+                # Log Description field 
+                if data.get("logdesc") == "SSL VPN login fail":
+
+                    username = data.get("user", "UKNOWN")
+                    src_ip = data.get("remip", "0.0.0.0")
+
+                    #print(username)
+                    #print(src_ip)
+
+                    if username in VALID_USER_DICT:
+                        attack_record = {
+                            "user": username,
+                            "ip": src_ip,
+                            "time": data.get("time"),
+                            "reason": data.get("reason")                        
+                        }
+                        targeted_attacks.append(attack_record)
+                    else:
+                        # RANDOM NOISE
+                        random_attacks.append(username)   
+
+                    #print(targeted_attacks)
+
     except FileNotFoundError:
         print("Could not find VPN log file. Check dir path")
         return
     
-    return data
+    print("Detected attacks are: ", targeted_attacks)
+    print("Random attacks are: ", random_attacks)
+    #return data
 
 
 if __name__ == "__main__":
