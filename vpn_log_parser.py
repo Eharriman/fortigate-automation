@@ -53,7 +53,7 @@ def analyze_logs():
                         }
                         targeted_attacks.append(attack_record)
                     else:
-                        # RANDOM NOISE
+                        # Random attacks (no match)
                         random_attacks.append(username)   
 
                     #print(targeted_attacks)
@@ -62,9 +62,12 @@ def analyze_logs():
         print("Could not find VPN log file. Check dir path")
         return
     
-    print("Detected attacks are: ", targeted_attacks)
-    print("Random attacks are: ", random_attacks)
+    #print("Detected attacks are: ", targeted_attacks)
+    #print("Random attacks are: ", random_attacks)
     #return data
+    print(f"Total Failed Attempts Found: {len(targeted_attacks) + len(random_attacks)}")
+    print(f"Random Dictionary Attacks (Ignored): {len(random_attacks)}")
+    print(f"Targeted Attacks (Concern): {len(targeted_attacks)}\n")
 
 
 if __name__ == "__main__":
