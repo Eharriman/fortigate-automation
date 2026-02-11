@@ -118,6 +118,31 @@ def is_targeted_attack(username):
     return False
 
 
+def generate_csv_report(attack_list):
+
+    if not attack_list:
+        print("No targeted attacks found")
+        return
+    
+    date_str = datetime.now().strftime("%Y-%m-%d")
+    filename = f"ssl-vpn_attack_report_{date_str}.csv"
+    filepath = os.path.join(SCRIPT_DIR, filename)
+
+    headers = ['User', 'Source IP', 'Time', 'Reason']
+
+    with open(filepath, mode='w', newline='', encoding='utf-8') as f:
+        writer = csv.DictWriter(f, fieldnames=headers)
+        writer.writeheader
+
+        for attack in attack_list:
+            writer.writerow({
+                'User': attack.get('user'),
+                'Source IP': attack.get('ip'),
+                'Time': attack.get('time'),
+                'Reason': attack.get('reason')
+            })
+
+
 def analyze_logs():
     #Initialize lists
     targeted_attacks = []
@@ -152,11 +177,11 @@ def analyze_logs():
                         }
                         targeted_attacks.append(attack_record)
 
-                    try:
-                        ipaddress.ip_address(src_ip)
-                        unique_bad_ips.add(src_ip)
-                    except ValueError:
-                        print(f"Warning: Invalid IP found in logs: {src_ip}")
+                        try:
+                            ipaddress.ip_address(src_ip)
+                            unique_bad_ips.add(src_ip)
+                        except ValueError:
+                            print(f"Warning: Invalid IP found in logs: {src_ip}")
                     else:
                         # Random attacks (no match)
                         random_attacks.append(username)   
@@ -175,14 +200,8 @@ def analyze_logs():
     print(f"Targeted Attacks (Concern): {len(targeted_attacks)}\n")
 
     if targeted_attacks:
-        print("******** TARGETED ATTACKS REPORT ********")
-        print(f"{'USER':<15} {'IP ADDRESS':<20} {'TIME':<10}")
-        print("-" * 50)
-        for attack in targeted_attacks:
-            print(f"{attack['user']:<15} {attack['ip']:<20} {attack['time']:<10}")
-
         print(f"\nUnique IPs identified for blocking: {len(unique_bad_ips)}")
-
+        generate_csv_report(targeted_attacks)
         generate_block_addr(unique_bad_ips)
 
 if __name__ == "__main__":
