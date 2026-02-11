@@ -1,5 +1,6 @@
 import re
 import os
+import ipaddress
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 LOG_FILE = os.path.join(SCRIPT_DIR, "sample_vpn_log.txt")
@@ -27,6 +28,8 @@ def analyze_logs():
     targeted_attacks = []
     random_attacks = []
 
+    unique_bad_ips = set()
+
     # Main log analysis
     try:
         with open(LOG_FILE, "r") as f:
@@ -52,6 +55,12 @@ def analyze_logs():
                             "reason": data.get("reason")                        
                         }
                         targeted_attacks.append(attack_record)
+
+                    try:
+                        ipaddress.ip_address(src_ip)
+                        unique_bad_ips.add(src_ip)
+                    except ValueError:
+                        print(f"Warning: Invalid IP found in logs: {src_ip}")
                     else:
                         # Random attacks (no match)
                         random_attacks.append(username)   
@@ -69,6 +78,14 @@ def analyze_logs():
     print(f"Random Dictionary Attacks (Ignored): {len(random_attacks)}")
     print(f"Targeted Attacks (Concern): {len(targeted_attacks)}\n")
 
+    if targeted_attacks:
+        print("******** TARGETED ATTACKS REPORT ********")
+        print(f"{'USER':<15} {'IP ADDRESS':<20} {'TIME':<10}")
+        print("-" * 50)
+        for attack in targeted_attacks:
+            print(f"{attack['user']:<15} {attack['ip']:<20} {attack['time']:<10}")
+
+        print(f"\nUnique IPs identified for blocking: {len(unique_bad_ips)}")
 
 if __name__ == "__main__":
     print(analyze_logs())
