@@ -18,6 +18,30 @@ VALID_DOMAINS = os.getenv('VALID_DOMAINS')
 
 VALID_USER_DICT = {"marvin","martin", "jsmith", "bwayne"}
 
+def load_users_from_csv(filepath):
+
+    valid_users = set()
+
+    if not os.path.exists(filepath):
+        print(f"[ERROR] User DB file not found: {filepath}")
+        return valid_users
+
+    try:
+        with open(filepath, mode='r', encoding='utf-8-sig') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                # normalize to lowercase for consistent matching
+                if 'username' in row and row['username']:
+                    valid_users.add(row['username'].strip().lower())
+                    
+        print(f"[INFO] Loaded {len(valid_users)} users from CSV.")
+    except Exception as e:
+        print(f"[ERROR] Failed to read user CSV: {e}")
+        
+    return valid_users
+
+print(load_users_from_csv(USER_LIST))
+
 def parse_log_line(line):
     # regex
     pattern = re.compile(r'([a-zA-Z0-9_]+)=(?:"([^"]+)"|(\S+))')
