@@ -142,7 +142,8 @@ def analyze_logs():
                     #print(username)
                     #print(src_ip)
 
-                    if username in VALID_USER_DICT:
+                    #if username in VALID_USER_DICT:
+                    if is_targeted_attack(username):
                         attack_record = {
                             "user": username,
                             "ip": src_ip,
