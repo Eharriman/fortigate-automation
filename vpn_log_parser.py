@@ -40,7 +40,8 @@ def load_users_from_csv(filepath):
         
     return valid_users
 
-print(load_users_from_csv(USER_LIST))
+# Load users
+VALID_USER_SET = load_users_from_csv(USER_LIST)
 
 def parse_log_line(line):
     # regex
@@ -96,6 +97,25 @@ def generate_block_addr(ip_list):
 
     except Exception as e:
         print(f"\n [ERROR] failed to write to conf file: {e}")
+
+
+def is_targeted_attack(username):
+
+    user_lower = username.lower()
+
+    if user_lower in VALID_USER_SET:
+        return True
+    
+    if "@" in user_lower:
+        try:
+            domain_part = user_lower.split("@")[1]
+            if domain_part in VALID_DOMAINS:
+                return True
+            
+        except IndexError:
+            pass
+
+    return False
 
 
 def analyze_logs():
