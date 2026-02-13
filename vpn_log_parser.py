@@ -153,6 +153,11 @@ def analyze_logs():
     random_attacks = []
     unique_bad_ips = set()
 
+    # Counters for basic stats
+    fw_stats = Counter()
+    ip_stats = Counter()
+    user_stats = Counter()
+
     log_files = [f for f in os.listdir(LOG_DIR) if f.endswith(('.log', '.txt'))]
 
     for filename in log_files:
