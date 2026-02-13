@@ -141,7 +141,7 @@ def generate_csv_report(attack_list):
                 writer.writerow(attack)
         print(f"[Success] csv vpn report written to: {filename}")
     except Exception as e:
-        print(f"[Error] is writing to csv file: {e}")
+        print(f"[Error] in writing to csv file: {e}")
 
 
 def analyze_logs():
@@ -180,10 +180,11 @@ def analyze_logs():
                         #if username in VALID_USER_DICT:
                         if is_targeted_attack(username):
                             attack_record = {
-                                "user": username,
-                                "ip": src_ip,
-                                "time": data.get("time"),
-                                "reason": data.get("reason")                        
+                                "User": username,
+                                "Source IP": src_ip,
+                                "Time": data.get("time"),
+                                "Reason": data.get("reason"),
+                                "FortiGate": fw_name                        
                             }
                             targeted_attacks.append(attack_record)
 
@@ -214,6 +215,7 @@ def analyze_logs():
         print(f"\nUnique IPs identified for blocking: {len(unique_bad_ips)}")
         generate_csv_report(targeted_attacks)
         generate_block_addr(unique_bad_ips)
+
 
 
 if __name__ == "__main__":
