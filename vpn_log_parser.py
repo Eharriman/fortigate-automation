@@ -130,20 +130,16 @@ def generate_csv_report(attack_list):
     filename = f"ssl-vpn_attack_report_{date_str}.csv"
     filepath = os.path.join(SCRIPT_DIR, filename)
 
-    headers = ['User', 'Source IP', 'Time', 'Reason']
+    headers = ['User', 'Source IP', 'Time', 'Reason', 'FortiGate']
 
     try:
         with open(filepath, mode='w', newline='', encoding='utf-8') as f:
             writer = csv.DictWriter(f, fieldnames=headers)
-            writer.writeheader
+            writer.writeheader()
 
             for attack in attack_list:
-                writer.writerow({
-                    'User': attack.get('user'),
-                    'Source IP': attack.get('ip'),
-                    'Time': attack.get('time'),
-                    'Reason': attack.get('reason')
-                })
+                writer.writerow(attack)
+        print(f"[Success] csv vpn report written to: {filename}")
     except Exception as e:
         print(f"[Error] is writing to csv file: {e}")
 
@@ -218,6 +214,7 @@ def analyze_logs():
         print(f"\nUnique IPs identified for blocking: {len(unique_bad_ips)}")
         generate_csv_report(targeted_attacks)
         generate_block_addr(unique_bad_ips)
+
 
 if __name__ == "__main__":
     print(analyze_logs())
