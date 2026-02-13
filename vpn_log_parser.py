@@ -5,14 +5,15 @@ import csv
 from datetime import datetime
 from dotenv import load_dotenv
 
-# Static configuration
-LOG_DIR = os.path.join(SCRIPT_DIR, "vpn_log_files")
+# Static 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+LOG_DIR = os.path.join(SCRIPT_DIR, "vpn_log_files")
 LOG_FILE = os.path.join(SCRIPT_DIR, "sample_vpn_log.txt")
 USER_LIST = os.path.join(SCRIPT_DIR, "valid_users.csv")
+ENV_FILE = os.path.join(SCRIPT_DIR, ".env")
 
 # ENV variables
-load_dotenv()
+load_dotenv(ENV_FILE)
 author = os.getenv('AUTHOR')
 VALID_DOMAINS = os.getenv('VALID_DOMAINS')
 
