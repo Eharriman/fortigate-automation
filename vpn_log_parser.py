@@ -18,7 +18,7 @@ author = os.getenv('AUTHOR')
 VALID_DOMAINS = os.getenv('VALID_DOMAINS')
 
 
-VALID_USER_DICT = {"marvin","martin", "jsmith", "bwayne"}
+#VALID_USER_DICT = {"marvin","martin", "jsmith", "bwayne"}
 
 def load_users_from_csv(filepath):
 
@@ -132,17 +132,20 @@ def generate_csv_report(attack_list):
 
     headers = ['User', 'Source IP', 'Time', 'Reason']
 
-    with open(filepath, mode='w', newline='', encoding='utf-8') as f:
-        writer = csv.DictWriter(f, fieldnames=headers)
-        writer.writeheader
+    try:
+        with open(filepath, mode='w', newline='', encoding='utf-8') as f:
+            writer = csv.DictWriter(f, fieldnames=headers)
+            writer.writeheader
 
-        for attack in attack_list:
-            writer.writerow({
-                'User': attack.get('user'),
-                'Source IP': attack.get('ip'),
-                'Time': attack.get('time'),
-                'Reason': attack.get('reason')
-            })
+            for attack in attack_list:
+                writer.writerow({
+                    'User': attack.get('user'),
+                    'Source IP': attack.get('ip'),
+                    'Time': attack.get('time'),
+                    'Reason': attack.get('reason')
+                })
+    except Exception as e:
+        print(f"[Error] is writing to csv file: {e}")
 
 
 def analyze_logs():
