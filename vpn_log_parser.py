@@ -152,50 +152,59 @@ def analyze_logs():
     #Initialize lists
     targeted_attacks = []
     random_attacks = []
-
     unique_bad_ips = set()
 
-    # Main log analysis
-    try:
-        with open(LOG_FILE, "r") as f:
-            for line in f:
-                if not line.strip():
-                    continue
-                data = parse_log_line(line)
+    log_files = [f for f in os.listdir(LOG_DIR) if f.endswith(('.log', '.txt'))]
 
-                # Log Description field 
-                if data.get("logdesc") == "SSL VPN login fail":
+    for filename in log_files:
+        full_path = os.path.join(LOG_DIR, filename)
 
-                    username = data.get("user", "UKNOWN")
-                    src_ip = data.get("remip", "0.0.0.0")
+        fw_name = filename.split('_')[0]
 
-                    #print(username)
-                    #print(src_ip)
+        print(f"Now processing firewall: {fw_name}")
 
-                    #if username in VALID_USER_DICT:
-                    if is_targeted_attack(username):
-                        attack_record = {
-                            "user": username,
-                            "ip": src_ip,
-                            "time": data.get("time"),
-                            "reason": data.get("reason")                        
-                        }
-                        targeted_attacks.append(attack_record)
+        # Main log analysis
+        try:
+            with open(full_path, "r", encoding='utf-8', errors='ignore') as f:
+            #with open(LOG_FILE, "r") as f:
+                for line in f:
+                    if not line.strip():
+                        continue
+                    data = parse_log_line(line)
 
-                        try:
-                            ipaddress.ip_address(src_ip)
-                            unique_bad_ips.add(src_ip)
-                        except ValueError:
-                            print(f"Warning: Invalid IP found in logs: {src_ip}")
-                    else:
-                        # Random attacks (no match)
-                        random_attacks.append(username)   
+                    # Log Description field 
+                    if data.get("logdesc") == "SSL VPN login fail":
 
-                    #print(targeted_attacks)
+                        username = data.get("user", "UKNOWN")
+                        src_ip = data.get("remip", "0.0.0.0")
 
-    except FileNotFoundError:
-        print("Could not find VPN log file. Check dir path")
-        return
+                        #print(username)
+                        #print(src_ip)
+
+                        #if username in VALID_USER_DICT:
+                        if is_targeted_attack(username):
+                            attack_record = {
+                                "user": username,
+                                "ip": src_ip,
+                                "time": data.get("time"),
+                                "reason": data.get("reason")                        
+                            }
+                            targeted_attacks.append(attack_record)
+
+                            try:
+                                ipaddress.ip_address(src_ip)
+                                unique_bad_ips.add(src_ip)
+                            except ValueError:
+                                print(f"Warning: Invalid IP found in logs: {src_ip}")
+                        else:
+                            # Random attacks (no match)
+                            random_attacks.append(username)   
+
+                        #print(targeted_attacks)
+
+        except FileNotFoundError:
+            print("Could not find VPN log file. Check dir path")
+            return
     
     #print("Detected attacks are: ", targeted_attacks)
     #print("Random attacks are: ", random_attacks)
