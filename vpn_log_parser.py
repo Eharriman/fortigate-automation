@@ -5,7 +5,8 @@ import csv
 from datetime import datetime
 from dotenv import load_dotenv
 
-
+# Static configuration
+LOG_DIR = os.path.join(SCRIPT_DIR, "vpn_log_files")
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 LOG_FILE = os.path.join(SCRIPT_DIR, "sample_vpn_log.txt")
 USER_LIST = os.path.join(SCRIPT_DIR, "valid_users.csv")
@@ -199,6 +200,7 @@ def analyze_logs():
     print(f"Random Dictionary Attacks (Ignored): {len(random_attacks)}")
     print(f"Targeted Attacks (Concern): {len(targeted_attacks)}\n")
 
+    # Generate report and conf script
     if targeted_attacks:
         print(f"\nUnique IPs identified for blocking: {len(unique_bad_ips)}")
         generate_csv_report(targeted_attacks)
