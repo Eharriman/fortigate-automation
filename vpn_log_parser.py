@@ -4,19 +4,24 @@ import ipaddress
 import csv
 from datetime import datetime
 from dotenv import load_dotenv
+from collections import Counter
 
-
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-LOG_FILE = os.path.join(SCRIPT_DIR, "sample_vpn_log.txt")
-USER_LIST = os.path.join(SCRIPT_DIR, "valid_users.csv")
+# Static 
+ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+LOG_DIR = os.path.join(ROOT_DIR, "vpn_log_files")
+REPORT_DIR = os.path.join(ROOT_DIR, "Reports")
+GEN_DIR = os.path.join(ROOT_DIR, "Generated Scripts") # Directory for scripts/conf which are generated
+LOG_FILE = os.path.join(ROOT_DIR, "sample_vpn_log.txt")
+USER_LIST = os.path.join(ROOT_DIR, "valid_users.csv")
+ENV_FILE = os.path.join(ROOT_DIR, ".env")
 
 # ENV variables
-load_dotenv()
+load_dotenv(ENV_FILE)
 author = os.getenv('AUTHOR')
 VALID_DOMAINS = os.getenv('VALID_DOMAINS')
 
 
-VALID_USER_DICT = {"marvin","martin", "jsmith", "bwayne"}
+#VALID_USER_DICT = {"marvin","martin", "jsmith", "bwayne"}
 
 def load_users_from_csv(filepath):
 
@@ -65,7 +70,8 @@ def generate_block_addr(ip_list):
     
     date_str = datetime.now().strftime("%Y-%m-%d")
     filename = f"conf_add_ips_blocked_ssl-vpn_{date_str}.conf"
-    filepath = os.path.join(SCRIPT_DIR, filename)
+    #filepath = os.path.join(ROOT_DIR, filename)
+    filepath = os.path.join(GEN_DIR, filename)
 
     try:
         with open(filepath, "w") as f:
@@ -126,83 +132,121 @@ def generate_csv_report(attack_list):
     
     date_str = datetime.now().strftime("%Y-%m-%d")
     filename = f"ssl-vpn_attack_report_{date_str}.csv"
-    filepath = os.path.join(SCRIPT_DIR, filename)
+    #filepath = os.path.join(ROOT_DIR, filename)
+    filepath = os.path.join(REPORT_DIR, filename)
 
-    headers = ['User', 'Source IP', 'Time', 'Reason']
+    headers = ['User', 'Source IP', 'Time', 'Reason', 'FortiGate']
 
-    with open(filepath, mode='w', newline='', encoding='utf-8') as f:
-        writer = csv.DictWriter(f, fieldnames=headers)
-        writer.writeheader
+    try:
+        with open(filepath, mode='w', newline='', encoding='utf-8') as f:
+            writer = csv.DictWriter(f, fieldnames=headers)
+            writer.writeheader()
 
-        for attack in attack_list:
-            writer.writerow({
-                'User': attack.get('user'),
-                'Source IP': attack.get('ip'),
-                'Time': attack.get('time'),
-                'Reason': attack.get('reason')
-            })
+            for attack in attack_list:
+                writer.writerow(attack)
+        print(f"[Success] csv vpn report written to: {filename}")
+    except Exception as e:
+        print(f"[Error] in writing to csv file: {e}")
 
 
 def analyze_logs():
     #Initialize lists
     targeted_attacks = []
     random_attacks = []
-
     unique_bad_ips = set()
 
-    # Main log analysis
-    try:
-        with open(LOG_FILE, "r") as f:
-            for line in f:
-                if not line.strip():
-                    continue
-                data = parse_log_line(line)
+    # Counters for basic stats
+    fw_stats = Counter()
+    ip_stats = Counter()
+    user_stats = Counter()
 
-                # Log Description field 
-                if data.get("logdesc") == "SSL VPN login fail":
+    log_files = [f for f in os.listdir(LOG_DIR) if f.endswith(('.log', '.txt'))]
 
-                    username = data.get("user", "UKNOWN")
-                    src_ip = data.get("remip", "0.0.0.0")
+    for filename in log_files:
+        full_path = os.path.join(LOG_DIR, filename)
 
-                    #print(username)
-                    #print(src_ip)
+        fw_name = filename.split('_')[0]
 
-                    #if username in VALID_USER_DICT:
-                    if is_targeted_attack(username):
-                        attack_record = {
-                            "user": username,
-                            "ip": src_ip,
-                            "time": data.get("time"),
-                            "reason": data.get("reason")                        
-                        }
-                        targeted_attacks.append(attack_record)
+        print(f"Now processing firewall: {fw_name}")
 
-                        try:
-                            ipaddress.ip_address(src_ip)
-                            unique_bad_ips.add(src_ip)
-                        except ValueError:
-                            print(f"Warning: Invalid IP found in logs: {src_ip}")
-                    else:
-                        # Random attacks (no match)
-                        random_attacks.append(username)   
+        # Main log analysis
+        try:
+            with open(full_path, "r", encoding='utf-8', errors='ignore') as f:
+            #with open(LOG_FILE, "r") as f:
+                for line in f:
+                    if not line.strip():
+                        continue
+                    data = parse_log_line(line)
 
-                    #print(targeted_attacks)
+                    # Log Description field 
+                    if data.get("logdesc") == "SSL VPN login fail":
 
-    except FileNotFoundError:
-        print("Could not find VPN log file. Check dir path")
-        return
+                        username = data.get("user", "UKNOWN")
+                        src_ip = data.get("remip", "0.0.0.0")
+
+                        #print(username)
+                        #print(src_ip)
+
+                        #if username in VALID_USER_DICT:
+                        if is_targeted_attack(username):
+                            attack_record = {
+                                "User": username,
+                                "Source IP": src_ip,
+                                "Time": data.get("time"),
+                                "Reason": data.get("reason"),
+                                "FortiGate": fw_name                        
+                            }
+                            targeted_attacks.append(attack_record)
+
+                            fw_stats[fw_name] += 1
+                            ip_stats[src_ip] += 1
+                            user_stats[username] += 1
+
+                            try:
+                                ipaddress.ip_address(src_ip)
+                                unique_bad_ips.add(src_ip)
+                            except ValueError:
+                                print(f"Warning: Invalid IP found in logs: {src_ip}")
+                        else:
+                            # Random attacks (no match)
+                            random_attacks.append(username)   
+
+                        #print(targeted_attacks)
+
+        except FileNotFoundError:
+            print("Could not find VPN log file. Check dir path")
+            return
     
     #print("Detected attacks are: ", targeted_attacks)
     #print("Random attacks are: ", random_attacks)
     #return data
-    print(f"Total Failed Attempts Found: {len(targeted_attacks) + len(random_attacks)}")
+    # Statistics and reporting
+    total_attacks = len(targeted_attacks) + len(random_attacks)
+    targeted_percentage = len(targeted_attacks) / total_attacks
+
+    print(f"********* VPN ATTACK ANALYSIS *********")
+    print(f"Total Failed Attempts Found: {total_attacks}")
     print(f"Random Dictionary Attacks (Ignored): {len(random_attacks)}")
     print(f"Targeted Attacks (Concern): {len(targeted_attacks)}\n")
+    print(f"Percentage of attempts which are targeted: {targeted_percentage}")
 
+    # Generate report and conf script
     if targeted_attacks:
+        print("\n Attacks by FortiGate")
+        for fw, count in fw_stats.most_common():
+            print(f" {fw:<20} {count}")
+        print("\n Top 10 targeted users")
+        for user, count in user_stats.most_common(10):
+            print(f"  {user:<20} {count}")
+        print("\n Top 10 Attacking Source IPs")
+        for ip, count in ip_stats.most_common(10):
+            print(f"  {ip:<20} {count}")
+
         print(f"\nUnique IPs identified for blocking: {len(unique_bad_ips)}")
         generate_csv_report(targeted_attacks)
         generate_block_addr(unique_bad_ips)
+
+
 
 if __name__ == "__main__":
     print(analyze_logs())
