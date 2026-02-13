@@ -71,7 +71,7 @@ def generate_block_addr(ip_list):
     date_str = datetime.now().strftime("%Y-%m-%d")
     filename = f"conf_add_ips_blocked_ssl-vpn_{date_str}.conf"
     #filepath = os.path.join(ROOT_DIR, filename)
-    filepath = os.path.join(REPORT_DIR, filename)
+    filepath = os.path.join(GEN_DIR, filename)
 
     try:
         with open(filepath, "w") as f:
@@ -232,6 +232,16 @@ def analyze_logs():
 
     # Generate report and conf script
     if targeted_attacks:
+        print("\n Attacks by FortiGate")
+        for fw, count in fw_stats.most_common():
+            print(f" {fw:<20} {count}")
+        print("\n Top 10 targeted users")
+        for user, count in user_stats.most_common(10):
+            print(f"  {user:<20} {count}")
+        print("\n Top 10 Attacking Source IPs")
+        for ip, count in ip_stats.most_common(10):
+            print(f"  {ip:<20} {count}")
+
         print(f"\nUnique IPs identified for blocking: {len(unique_bad_ips)}")
         generate_csv_report(targeted_attacks)
         generate_block_addr(unique_bad_ips)
