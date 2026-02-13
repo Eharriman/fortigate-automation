@@ -3,14 +3,16 @@ import os
 import ipaddress
 import csv
 from datetime import datetime
-from dotenv import load_dotenv
+from dotenv import 
+from collections import Counter
 
 # Static 
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-LOG_DIR = os.path.join(SCRIPT_DIR, "vpn_log_files")
-LOG_FILE = os.path.join(SCRIPT_DIR, "sample_vpn_log.txt")
-USER_LIST = os.path.join(SCRIPT_DIR, "valid_users.csv")
-ENV_FILE = os.path.join(SCRIPT_DIR, ".env")
+ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+LOG_DIR = os.path.join(ROOT_DIR, "vpn_log_files")
+REPORT_DIR = os.path.join(ROOT_DIR, "Reports")
+LOG_FILE = os.path.join(ROOT_DIR, "sample_vpn_log.txt")
+USER_LIST = os.path.join(ROOT_DIR, "valid_users.csv")
+ENV_FILE = os.path.join(ROOT_DIR, ".env")
 
 # ENV variables
 load_dotenv(ENV_FILE)
@@ -67,7 +69,8 @@ def generate_block_addr(ip_list):
     
     date_str = datetime.now().strftime("%Y-%m-%d")
     filename = f"conf_add_ips_blocked_ssl-vpn_{date_str}.conf"
-    filepath = os.path.join(SCRIPT_DIR, filename)
+    #filepath = os.path.join(ROOT_DIR, filename)
+    filepath = os.path.join(REPORT_DIR, filename)
 
     try:
         with open(filepath, "w") as f:
@@ -128,7 +131,7 @@ def generate_csv_report(attack_list):
     
     date_str = datetime.now().strftime("%Y-%m-%d")
     filename = f"ssl-vpn_attack_report_{date_str}.csv"
-    filepath = os.path.join(SCRIPT_DIR, filename)
+    filepath = os.path.join(ROOT_DIR, filename)
 
     headers = ['User', 'Source IP', 'Time', 'Reason', 'FortiGate']
 
