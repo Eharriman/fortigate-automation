@@ -3,13 +3,14 @@ import os
 import ipaddress
 import csv
 from datetime import datetime
-from dotenv import 
+from dotenv import load_dotenv
 from collections import Counter
 
 # Static 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 LOG_DIR = os.path.join(ROOT_DIR, "vpn_log_files")
 REPORT_DIR = os.path.join(ROOT_DIR, "Reports")
+GEN_DIR = os.path.join(ROOT_DIR, "Generated Scripts") # Directory for scripts/conf which are generated
 LOG_FILE = os.path.join(ROOT_DIR, "sample_vpn_log.txt")
 USER_LIST = os.path.join(ROOT_DIR, "valid_users.csv")
 ENV_FILE = os.path.join(ROOT_DIR, ".env")
@@ -131,7 +132,8 @@ def generate_csv_report(attack_list):
     
     date_str = datetime.now().strftime("%Y-%m-%d")
     filename = f"ssl-vpn_attack_report_{date_str}.csv"
-    filepath = os.path.join(ROOT_DIR, filename)
+    #filepath = os.path.join(ROOT_DIR, filename)
+    filepath = os.path.join(REPORT_DIR, filename)
 
     headers = ['User', 'Source IP', 'Time', 'Reason', 'FortiGate']
 
@@ -196,6 +198,10 @@ def analyze_logs():
                             }
                             targeted_attacks.append(attack_record)
 
+                            fw_stats[fw_name] += 1
+                            ip_stats[src_ip] += 1
+                            user_stats[username] += 1
+
                             try:
                                 ipaddress.ip_address(src_ip)
                                 unique_bad_ips.add(src_ip)
@@ -214,9 +220,15 @@ def analyze_logs():
     #print("Detected attacks are: ", targeted_attacks)
     #print("Random attacks are: ", random_attacks)
     #return data
-    print(f"Total Failed Attempts Found: {len(targeted_attacks) + len(random_attacks)}")
+    # Statistics and reporting
+    total_attacks = len(targeted_attacks) + len(random_attacks)
+    targeted_percentage = len(targeted_attacks) / total_attacks
+
+    print(f"********* VPN ATTACK ANALYSIS *********")
+    print(f"Total Failed Attempts Found: {total_attacks}")
     print(f"Random Dictionary Attacks (Ignored): {len(random_attacks)}")
     print(f"Targeted Attacks (Concern): {len(targeted_attacks)}\n")
+    print(f"Percentage of attempts which are targeted: {targeted_percentage}")
 
     # Generate report and conf script
     if targeted_attacks:
