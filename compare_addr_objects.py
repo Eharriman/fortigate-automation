@@ -21,4 +21,13 @@ def get_existing_ips(conf_path):
         print(f"[ERROR] User DB file not found: {conf_path}")
         return existing_ips
     
-    pass
+    pattern = re.compile(r'^\s*set\s+subnet\s+([0-9\.]+)')
+
+    with open(conf_path, 'r', encoding='utf-8') as f:
+        for line in f:
+            match = pattern.search(line)
+            if match:
+                ip = match.group(1)
+                existing_ips.add(ip)
+
+    print(f"{len(existing_ips)} found in conf file")
