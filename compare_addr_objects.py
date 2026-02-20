@@ -18,7 +18,7 @@ def get_existing_ips(conf_path):
     existing_ips = set()
 
     if not os.path.exists(conf_path):
-        print(f"[ERROR] User DB file not found: {conf_path}")
+        print(f"[ERROR] Conf file not found: {conf_path}")
         return existing_ips
     
     pattern = re.compile(r'^\s*set\s+subnet\s+([0-9\.]+)')
@@ -31,3 +31,12 @@ def get_existing_ips(conf_path):
                 existing_ips.add(ip)
 
     print(f"{len(existing_ips)} found in conf file")
+
+
+def get_missing_ips(csv_path, existing_ips):
+
+    missing_ips = []
+
+    if not os.path.exists(csv_path):
+        print(f"[ERROR] CSV file not found: {csv_path}")
+        return existing_ips
