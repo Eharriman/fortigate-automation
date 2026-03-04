@@ -58,7 +58,25 @@ def find_missing_gateways(csv_path, existing_ips):
     #pass
 
     missing_gateways = []
-    
+
     if not os.path.exists(csv_path):
         print(f"[ERROR] CSV file not found at:\n -> {csv_path}")
-        return missing_gateways
+        return 
+    
+    with open(csv_path, 'r', encoding='utf-8-sig') as f:
+        reader = csv.reader(f)
+        for row in reader:
+            if not row or len(row) < 2:
+                continue
+                
+            ip = row[0].strip()
+            site = row[1].strip()
+            
+            # Skip header row if it exists
+            if ip.lower() == 'ip':
+                continue
+                
+            if ip not in existing_ips:
+                missing_gateways.append((ip, site))
+
+    return missing_gateways
