@@ -55,4 +55,10 @@ def get_missing_ips(csv_path, existing_ips):
     return existing_ips
 
 def find_missing_gateways(csv_path, existing_ips):
-    pass
+    #pass
+
+    missing_gateways = []
+    
+    if not os.path.exists(csv_path):
+        print(f"[ERROR] CSV file not found at:\n -> {csv_path}")
+        return missing_gateways
