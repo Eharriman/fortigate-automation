@@ -40,3 +40,15 @@ def get_missing_ips(csv_path, existing_ips):
     if not os.path.exists(csv_path):
         print(f"[ERROR] CSV file not found: {csv_path}")
         return existing_ips
+    
+    # Identifies ips in subnet line of conf file
+    pattern = re.compile(r'^\s*set\s+subnet\s+([0-9\.]+)')
+
+    with open(conf_path, 'r', encoding='utf-8') as f:
+        for line in f:
+            match = pattern.search(line)
+            if match:
+                ip = match.group(1)
+                existing_ips.add(ip)
+
+    return existing_ips
