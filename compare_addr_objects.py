@@ -51,4 +51,8 @@ def get_missing_ips(csv_path, existing_ips):
                 ip = match.group(1)
                 existing_ips.add(ip)
 
+    print(f"[INFO] Found {len(existing_ips)} unique IPs in the config excerpt.")
     return existing_ips
+
+def find_missing_gateways(csv_path, existing_ips):
+    pass
