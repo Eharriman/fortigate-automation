@@ -79,4 +79,10 @@ def find_missing_gateways(csv_path, existing_ips):
             if ip not in existing_ips:
                 missing_gateways.append((ip, site))
 
-    return missing_gateways
+    return 
+
+def generate_missing_conf(missing_list):
+    
+    if not missing_list:
+        print("[SUCCESS] All IPs from the CSV are already in the FortiGate config!")
+        return
