@@ -82,7 +82,33 @@ def find_missing_gateways(csv_path, existing_ips):
     return 
 
 def generate_missing_conf(missing_list):
-    
+
     if not missing_list:
         print("[SUCCESS] All IPs from the CSV are already in the FortiGate config!")
-        return
+        
+    os.makedirs(GEN_DIR, exist_ok=True)
+        
+    date_str = datetime.now().strftime("%Y-%m-%d")
+    filename = f"conf_appgate_gateways_{date_str}.conf"
+    filepath = os.path.join(GEN_DIR, filename)
+
+    try:
+        with open(filepath, "w") as f:
+            f.write("# Automated AppGate GW Address Script\n")
+            f.write(f"# Date: {date_str}\n")
+            f.write(f"# Total Missing IPs to Add: {len(missing_list)}\n\n")
+
+            f.write("config firewall address\n")
+            for ip, site in missing_list:
+                # Replace spaces in site name with underscores just in case
+                safe_site_name = site.replace(" ", "_")
+                obj_name = f"AppGate_GW-{safe_site_name}"
+                
+                f.write(f'    edit "{obj_name}"\n')
+                f.write(f'        set subnet {ip} 255.255.255.255\n')
+                f.write('    next\n')
+            f.write("end\n")
+
+        print(f"\n[SUCCESS] Configuration saved to:\n -> {filepath}")
+    except Exception as e:
+        print(f"[ERROR] Failed to write conf file: {e}")
