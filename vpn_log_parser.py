@@ -1,3 +1,9 @@
+'''
+This script is used to parse a FortiGate vpn log in order to identify dictionary attacks and overall attack characteristics.
+
+'''
+
+
 import re
 import os
 import ipaddress
