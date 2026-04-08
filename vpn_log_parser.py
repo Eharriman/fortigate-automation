@@ -229,6 +229,7 @@ def analyze_logs():
     # Statistics and reporting
     total_attacks = len(targeted_attacks) + len(random_attacks)
     targeted_percentage = len(targeted_attacks) / total_attacks
+    remote_density = len(unique_bad_ips) / total_attacks
 
     print(f"********* VPN ATTACK ANALYSIS *********")
     print(f"Total Failed Attempts Found: {total_attacks}")
@@ -251,7 +252,6 @@ def analyze_logs():
         print(f"\nUnique IPs identified for blocking: {len(unique_bad_ips)}")
         generate_csv_report(targeted_attacks)
         generate_block_addr(unique_bad_ips)
-
 
 
 if __name__ == "__main__":
