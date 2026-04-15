@@ -32,8 +32,12 @@ def get_existing_ips(conf_path):
 
     print(f"{len(existing_ips)} found in conf file")
 
+    return existing_ips
+
 
 def get_missing_ips(csv_path, existing_ips):
+
+    print(f"Starting IP comparison between existing vs. imported")
 
     missing_ips = []
 
@@ -41,6 +45,7 @@ def get_missing_ips(csv_path, existing_ips):
         print(f"[ERROR] CSV file not found: {csv_path}")
         return existing_ips
     
+    print(f"[Success] CSV file found: {csv_path}")
     # Identifies ips in subnet line of conf file
     pattern = re.compile(r'^\s*set\s+subnet\s+([0-9\.]+)')
 
@@ -112,3 +117,19 @@ def generate_missing_conf(missing_list):
         print(f"\n[SUCCESS] Configuration saved to:\n -> {filepath}")
     except Exception as e:
         print(f"[ERROR] Failed to write conf file: {e}")
+
+def main():
+    print("--- Starting IP Cross-Reference ---")
+    
+    existing_ips = get_existing_ips(CONF_FILE)
+    if not existing_ips:
+        print(f"[Error] no existing IPs found in CONF File at {CONF_FILE}")
+        return
+
+    missing_gateways = find_missing_gateways(CSV_FILE, existing_ips)
+    
+    if missing_gateways:
+        generate_missing_conf(missing_gateways)
+
+if __name__ == "__main__":
+    main()
