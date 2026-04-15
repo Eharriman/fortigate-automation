@@ -91,9 +91,10 @@ def find_missing_gateways(csv_path, existing_ips):
             cnt += 1
 
         print(f"This loop iterated {cnt} times")
-    return 
+    return missing_gateways
 
 def generate_missing_conf(missing_list):
+    print("Starting config generation")
 
     if not missing_list:
         print("[SUCCESS] All IPs from the CSV are already in the FortiGate config!")
@@ -132,9 +133,11 @@ def main():
     if not existing_ips:
         print(f"[Error] no existing IPs found in CONF File at {CONF_FILE}")
         return
+    #print(existing_ips)
 
     print(f"--- Starting IP Comparison using files {CSV_FILE} versus {CONF_FILE} ---")
     missing_gateways = find_missing_gateways(CSV_FILE, existing_ips)
+    print(f"The missing gateways are: {missing_gateways}")
     
     if missing_gateways:
         generate_missing_conf(missing_gateways)
