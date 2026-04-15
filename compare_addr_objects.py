@@ -68,8 +68,11 @@ def find_missing_gateways(csv_path, existing_ips):
         print(f"[ERROR] CSV file not found at:\n -> {csv_path}")
         return 
     
+    print(f"[Success] CSV file found at:\n -> {csv_path}")
+
     with open(csv_path, 'r', encoding='utf-8-sig') as f:
         reader = csv.reader(f)
+        cnt = 0
         for row in reader:
             if not row or len(row) < 2:
                 continue
@@ -82,8 +85,12 @@ def find_missing_gateways(csv_path, existing_ips):
                 continue
                 
             if ip not in existing_ips:
+                print(f"Unique IP found! IP: {ip} at site: {site}")
                 missing_gateways.append((ip, site))
 
+            cnt += 1
+
+        print(f"This loop iterated {cnt} times")
     return 
 
 def generate_missing_conf(missing_list):
@@ -126,6 +133,7 @@ def main():
         print(f"[Error] no existing IPs found in CONF File at {CONF_FILE}")
         return
 
+    print(f"--- Starting IP Comparison using files {CSV_FILE} versus {CONF_FILE} ---")
     missing_gateways = find_missing_gateways(CSV_FILE, existing_ips)
     
     if missing_gateways:
